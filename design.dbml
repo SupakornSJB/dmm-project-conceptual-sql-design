@@ -6,24 +6,24 @@ Table User {
   id int [pk]
   name varchar
   email varchar [unique, not null]
-  account_type varchar // customer, owner, admin
-  created_at datetime
+  account_type varchar [not null]// customer, owner, admin
+  created_at datetime [not null]
 }
 
 Table Space {
   id int [pk]
-  name varchar
-  location varchar
-  location_geo geography
-  capacity int
-  size float
+  name varchar [not null]
+  location varchar [not null]
+  location_geo geography [not null]
+  capacity int [not null]
+  size float [not null]
 }
 
 // Assuming multiple admins, M:N relation
 Table SpaceOwner {
   user_id int [pk, ref: > User.id]
   space_id int [pk, ref: > Space.id]
-  role varchar // primary_owner, co_admin
+  role varchar  [not null] // primary_owner, co_admin 
 }
 
 // Facilities (separated into different tables)
@@ -36,7 +36,7 @@ Table SpaceFacilities {
   id int [pk]
   space_id int [ref: > Space.id]
   facility_type_id int [ref: > FacilityType.id] // reference id of that facility
-  total_amount int
+  total_amount int [not null] // all that the space have, the available amount at time should be derived instead
 }
 
 // Rental Rates (separated into different tables like facility)
@@ -48,19 +48,19 @@ Table RentalRateType {
 Table SpaceRentalFee {
   space_id int [pk]
   rate_code varchar [pk, ref: > RentalRateType.code]
-  amount decimal
-  currency varchar
+  amount decimal [not null]
+  currency varchar [not null]
 }
 
 // Bookings (added a surrogate key)
 Table SpaceBooking {
   id int [pk]
   space_id int
-  booked_period_start datetime
-  booked_period_end datetime
-  booker_id int [ref: > User.id]
-  created_at datetime
-  updated_at datetime
+  booked_period_start datetime [not null]
+  booked_period_end datetime [not null]
+  booker_id int [not null, ref: > User.id]
+  created_at datetime [not null]
+  updated_at datetime [not null]
   approved_by_user_id int [ref: > User.id] // confirmation
   reason varchar // booking reason
   check_in_time datetime
@@ -71,7 +71,7 @@ Table SpaceBooking {
 Table SpaceBookingBookedFacilities {
   booking_id int [pk, ref: > SpaceBooking.id]
   facility_id int [pk, ref: > SpaceFacilities.id]
-  amount int
+  amount int [not null]
 }
 
 // Feedback (feedback tied to booking id instead of space id so that user can give feedback of each booking)
@@ -79,7 +79,7 @@ Table SpaceFeedback {
   id int [pk]
   booking_id int [not null, ref: > SpaceBooking.id]
   user_id int [not null, ref: > User.id]
-  rating int // 1-5
+  rating int  [not null] // 1-5
   comment varchar
-  created_at datetime
+  created_at datetime [not null]
 }
