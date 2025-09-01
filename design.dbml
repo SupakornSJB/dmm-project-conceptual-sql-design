@@ -83,3 +83,13 @@ Table SpaceFeedback {
   comment varchar
   created_at datetime [not null]
 }
+
+// Assume system allows multiple payments per booking 
+// e.g. 50% in cash, 50% in credit cards
+// query total amount to see if all have been paid
+Table BookingPayment {
+  id int [pk]
+  booking_id int [ref: > SpaceBooking.id]
+  method varchar // credit card, cash, etc.
+  amount float
+}
