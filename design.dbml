@@ -10,11 +10,22 @@ Table User {
   created_at datetime [not null]
 }
 
+// Assuming user can have multiple preferred locations
+Table UserLocation {
+	id int [pk]
+	user_id int [ref: > User.id]
+	name varchar(256) [not null]
+	location varchar(1024) [not null]
+	latitude float [not null]
+	longtitude float [not null]
+}
+
 Table Space {
   id int [pk]
   name varchar [not null]
   location varchar [not null]
-  location_geo geography [not null]
+  latitude float [not null]
+  longtitude float [not null]
   capacity int [not null]
   size float [not null]
 }
