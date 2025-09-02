@@ -23,7 +23,8 @@ Table Space {
   id int [pk]
   name varchar [not null]
   location varchar [not null]
-  location_geo geography [not null]
+  latitude float [not null]
+  longtitude float [not null]
   capacity int [not null]
   size float [not null]
 }
