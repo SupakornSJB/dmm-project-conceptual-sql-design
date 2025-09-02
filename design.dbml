@@ -45,6 +45,7 @@ Table FacilityType {
 Table SpaceFacilities {
   id int [pk]
   space_id int [ref: > Space.id]
+  name varchar
   facility_type_id int [ref: > FacilityType.id] // reference id of that facility
   total_amount int [not null] // all that the space have, the available amount at time should be derived instead
 }
