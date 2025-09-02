@@ -10,7 +10,6 @@ Table User {
   created_at datetime [not null]
 }
 
-// Assuming user can have multiple preferred locations
 Table UserLocation {
 	id int [pk]
 	user_id int [ref: > User.id]
@@ -24,8 +23,7 @@ Table Space {
   id int [pk]
   name varchar [not null]
   location varchar [not null]
-  latitude float [not null]
-  longtitude float [not null]
+  location_geo geography [not null]
   capacity int [not null]
   size float [not null]
 }
@@ -56,23 +54,25 @@ Table RentalRateType {
   description varchar
 }
 
-Table SpaceRentalFee {
-  space_id int [pk]
+Table SpaceRentalFeeRate {
+  space_id int [pk, ref: > Space.id]
   rate_code varchar [pk, ref: > RentalRateType.code]
-  amount decimal [not null]
+  rate decimal [not null]
   currency varchar [not null]
 }
 
 // Bookings (added a surrogate key)
 Table SpaceBooking {
   id int [pk]
-  space_id int [not null]
+  space_id int [not null, ref: > Space.id, ref: > SpaceRentalFeeRate.space_id]
   booked_period_start datetime [not null]
-  booked_period_end datetime [not null]
+  rental_rate id [ref: - SpaceRentalFeeRate.rate_code]
+  rental_unit int // rental_fee_rate_amount * rental rate = rental fee
   booker_id int [not null, ref: > User.id]
   created_at datetime [not null]
   updated_at datetime [not null]
   approved_by_user_id int [ref: > User.id] // confirmation
+  approved_by_user_at_time datetime
   reason varchar // booking reason
   check_in_time datetime // null if not checked in
   check_out_time datetime // null if not checked out
@@ -93,14 +93,4 @@ Table SpaceFeedback {
   rating int  [not null] // 1-5
   comment varchar
   created_at datetime [not null]
-}
-
-// Assume system allows multiple payments per booking 
-// e.g. 50% in cash, 50% in credit cards
-// query total amount to see if all have been paid
-Table BookingPayment {
-  id int [pk]
-  booking_id int [ref: > SpaceBooking.id]
-  method varchar // credit card, cash, etc.
-  amount float
 }
