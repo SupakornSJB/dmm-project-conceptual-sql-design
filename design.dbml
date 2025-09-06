@@ -54,7 +54,6 @@ Table SpaceFacilitiesRentalFeeRate {
   facility_id int [pk, ref: > SpaceFacilities.id]
   rate_code varchar [pk, ref: > RentalRateType.code]
   rate decimal [not null]
-  currency varchar [not null]
 }
 
 // Rental Rates (separated into different tables like facility)
@@ -68,7 +67,6 @@ Table SpaceRentalFeeRate {
   space_id int [pk, ref: > Space.id]
   rate_code varchar [pk, ref: > RentalRateType.code]
   rate decimal [not null]
-  currency varchar [not null]
 }
 
 // Bookings (added a surrogate key)
