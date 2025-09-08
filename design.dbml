@@ -16,7 +16,7 @@ Table UserLocation {
 	name varchar(256) [not null]
 	location varchar(1024) [not null]
 	latitude float [not null]
-	longtitude float [not null]
+	longitude float [not null]
 }
 
 Table Space {
