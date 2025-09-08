@@ -45,22 +45,28 @@ Table FacilityType {
 Table SpaceFacilities {
   id int [pk]
   space_id int [ref: > Space.id, not null]
-  name varchar
+  name varchar [not null]
   facility_type_id int [ref: > FacilityType.id, not null] // reference id of that facility
   total_amount int [not null] // all that the space have, the available amount at time should be derived instead
+}
+
+Table SpaceFacilitiesRentalFeeRate {
+  facility_id int [pk, ref: > SpaceFacilities.id]
+  rate_code varchar [pk, ref: > RentalRateType.code]
+  rate decimal [not null]
 }
 
 // Rental Rates (separated into different tables like facility)
 Table RentalRateType {
   code varchar [pk] // HR, HD, FD
   description varchar [not null]
+  minutes int [not null]
 }
 
 Table SpaceRentalFeeRate {
   space_id int [pk, ref: > Space.id]
   rate_code varchar [pk, ref: > RentalRateType.code]
   rate decimal [not null]
-  currency varchar [not null]
 }
 
 // Bookings (added a surrogate key)
@@ -68,7 +74,7 @@ Table SpaceBooking {
   id int [pk]
   space_id int [not null, ref: > Space.id, ref: > SpaceRentalFeeRate.space_id]
   booked_period_start datetime [not null]
-  rental_rate id [ref: - SpaceRentalFeeRate.rate_code, not null]
+  rental_rate varchar [ref: - SpaceRentalFeeRate.rate_code, not null]
   rental_unit int // rental_fee_rate_amount * rental rate = rental fee
   booker_id int [not null, ref: > User.id]
   created_at datetime [not null]
