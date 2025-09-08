@@ -3,10 +3,6 @@
 -- Host: mysql-ait-lab-session-mysql-ait.h.aivencloud.com    Database: ourspacev2
 -- ------------------------------------------------------
 -- Server version	8.0.35
-
-CREATE DATABASE WhatIsLife;
-USE WhatIsLife;
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -20,11 +16,14 @@ USE WhatIsLife;
 SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
 SET @@SESSION.SQL_LOG_BIN= 0;
 
+DROP DATABASE IF EXISTS Bruh;
+CREATE DATABASE Bruh;
+USE Bruh;
+
 --
 -- GTID state at the beginning of the backup 
 --
-
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'dcba834f-7903-11f0-a109-b2914c9a0078:1-1823';
+-- SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'dcba834f-7903-11f0-a109-b2914c9a0078:1-1823';
 
 --
 -- Table structure for table `FacilityType`
@@ -129,8 +128,8 @@ CREATE TABLE `SpaceBooking` (
   KEY `space_id` (`space_id`),
   KEY `booker_id` (`booker_id`),
   KEY `approved_by_user_id` (`approved_by_user_id`),
-  KEY `fk_booking_rate` (`rental_rate`),
-  CONSTRAINT `fk_booking_rate` FOREIGN KEY (`rental_rate`) REFERENCES `SpaceRentalFeeRate` (`rate_code`),
+  KEY `fk_booking_rate` (`space_id`, `rental_rate`),
+  CONSTRAINT `fk_booking_rate` FOREIGN KEY (`space_id`, `rental_rate`) REFERENCES `SpaceRentalFeeRate` (`space_id`, `rate_code`),
   CONSTRAINT `fk_rental_rate` FOREIGN KEY (`rental_rate`) REFERENCES `RentalRateType` (`code`),
   CONSTRAINT `SpaceBooking_ibfk_1` FOREIGN KEY (`space_id`) REFERENCES `Space` (`id`) ON DELETE CASCADE,
   CONSTRAINT `SpaceBooking_ibfk_2` FOREIGN KEY (`booker_id`) REFERENCES `User` (`id`),
