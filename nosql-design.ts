@@ -1,61 +1,104 @@
-interface ObjectId {}
+export class ObjectId {constructor(public readonly id: string) { }}
 
-interface User {
+// MAIN COLLECTION - Only these are actual collections
+export interface User {
     _id: ObjectId
     name: string
     email: string
     createdAt: Date
     updatedAt: Date
     accountType: string
-    locations: {
-        name: string
-        location: string
-        latitude: number
-        longitude: number
-    }[]
+    locations: Location[]
+    dateOfBirth: Date // For birth month discount
+    loyaltyPoints: number // For loyalty points
 }
 
-interface Space {
+export interface Space {
     _id: ObjectId
     name: string
-    owner: ObjectId
-    locations: {
-        name: string
-        latitude: number
-        longitude: number
-    },
-    capacity: {
-        size: number
-        roomSize: string
-    },
-    availableFacilities: {
-        type: string
-        availableAmount: number
-        name: string,
-        details: Object
-        costPerUnit: number
-        minutesPerUnit: number
-    }[],
-    rentalRates: {
-        code: string // "FD"
-        costPerUnit: number
-        minutesPerUnit: number
-    }[],
-    feedbacks: {
-        user: ObjectId,
-        createAt: Date,
-        rating: number,
-    }[]
+    description: string
+    owners: ObjectId[]
+    locations: Location,
+    capacity: SpaceCapacity,
+    availableFacilities: Facility[],
+    rentalRates: RentalRate[],
+    feedbacks: UserFeedback[]
 }
 
-interface SpaceBooking {
+export interface SpaceBooking {
     _id: ObjectId
     space: ObjectId
     bookedBy: ObjectId
+    approvedBy: ApprovedBy // Admin approval (may not be necessary)
+    reason: string // Reason for booking (may not be necessary)
     startTime: Date
-    endTime: Date
-    bookedFacilities: {
-        name: string
-        bookAmount: number
-    }[]
+    bookedAmount: number // I don't understand this
+    bookedFacilities: BookedFacility[]
+    selectedRentalRate: RentalRate,
+
+    discountApplied: boolean // if repeat customer or birth month add a discount
+    discountType: string // repeat or birth month
+    discountPercentage: number // percentage of discount
+    promotionId: ObjectId // reference promotion
+}
+
+export interface Promotion { // Special promotion
+  _id: ObjectId,
+  code: string,
+  description: string,
+  discountPercent: number,
+  validFrom: Date,
+  validTo: Date,
+  applicableSpaces: ObjectId[], // or 'all'
+  applicableUsers: ObjectId[]   // or 'all'
+}
+
+
+export interface Time {
+    _id: ObjectId
+    description: string
+    minutesPerUnit: number
+}
+
+// EMBEDDED - These aren't collections, just embeded into collection
+export interface Location {
+    name: string
+    location: string
+    latitude: number
+    longitude: number
+}
+
+export interface RentalRate {
+    time: ObjectId // Time
+    costPerUnit: number
+}
+
+export interface SpaceCapacity {
+    size: number
+    roomSize: string
+}
+
+export interface Facility {
+    type: string
+    totalAmount: number
+    name: string,
+    details: Object
+    rentalRates: RentalRate[]
+}
+
+export interface BookedFacility {
+    name: string,
+    amount: number
+}
+
+export interface UserFeedback {
+    user: ObjectId,
+    createAt: Date,
+    rating: number,
+    comment: string
+}
+
+export interface ApprovedBy { // Approved by user id on this date
+    userId: ObjectId,
+    approvedAt: Date
 }
