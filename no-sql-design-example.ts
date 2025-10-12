@@ -75,19 +75,41 @@ const ExampleSpaceCollection: Space[] = [{
 const ExampleSpaceBookingCollection: SpaceBooking[] = [{
     _id: new ObjectId("333333333333"),
     bookedBy: new ObjectId("22222222222222"),
-    startTime: new Date("2025-01-10"),
     space: new ObjectId("11111111111111"),
+    startTime: new Date("2025-01-10"),
+    rentalUnit: 3,
     bookedFacilities: [
         {
-            name: "LG TV",
-            amount: 1,
-        }
+            facility: {
+                type: "TV",
+                totalAmount: 10,
+                name: "LG TV",
+                details: {
+                    resolution: "1920x1080",
+                    weight: "10 kg"
+                },
+                rentalRates: [
+                    {
+                        time: new ObjectId("5555555555555555"), // Time
+                        costPerUnit: 4
+                    },
+                    {
+                        time: new ObjectId("666666666666666"), // Time
+                        costPerUnit: 10
+                    },
+                    {
+                        time: new ObjectId("777777777777777"), // Time
+                        costPerUnit: 20
+                    },
+                ]
+            },
+            amount: 3
+        },
     ],
     selectedRentalRate: {
         time: new ObjectId("555555555555555"),
         costPerUnit: 0
-    },
-    bookedAmount: 3
+    }
 }];
 
 const ExampleUserCollection: User[] = [{

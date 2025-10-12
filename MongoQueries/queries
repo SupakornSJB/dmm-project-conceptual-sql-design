@@ -1,0 +1,157 @@
+﻿// Query 1
+db.User.insertOne({
+    name: "Name",
+    email: "name@email.com",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    accountType: "admin",
+    location: [
+      {
+        name: "Samyan",
+        location: "111/11 Samyan Bangkok 11111",
+        latitude: 123.12,
+        longitude: 123.12
+      },
+      {
+        name: "AIT",
+        location: "111/11 AIT Pathumthani 11111",
+        latitude: 111.11,
+        longitude: 111.11
+      }
+    ]
+  })
+
+// Query 2
+db.Space.insertOne({
+    name: "AIT CSIM Building",
+    description: "This is the AIT CSIM Building, use it however you want.",
+    owners: [
+        ObjectId("68ebb32c553f466f18e6fad1")
+    ],
+    locations: {
+        name: "AIT",
+        location: "111/11 AIT Pathumthani 11111",
+        latitude: 111.11,
+        longitude: 111.11
+    },
+    capacity: {
+        roomSize: "30x40",
+        size: 10
+    },
+    availableFacilities: [
+        {
+            type: "TV",
+            totalAmount: 10,
+            name: "LG TV",
+            details: {
+                resolution: "1920x1080",
+                weight: "10 kg"
+            },
+            rentalRates: [
+                {
+                    time: ObjectId("68ebb63c553f466f18e6fad3"), // Time
+                    costPerUnit: 4
+                },
+                {
+                    time: ObjectId("68ebb63c553f466f18e6fad4"), // Time
+                    costPerUnit: 10
+                },
+                {
+                    time: ObjectId("68ebb63c553f466f18e6fad5"), // Time
+                    costPerUnit: 20
+                }
+            ]
+        }
+    ],
+    rentalRates: [
+        {
+            costPerUnit: 180,
+            time: ObjectId("68ebb63c553f466f18e6fad3")
+        },
+        {
+            costPerUnit: 100,
+            time: ObjectId("68ebb63c553f466f18e6fad4")
+        },
+        {
+            costPerUnit: 100,
+            time: ObjectId("68ebb63c553f466f18e6fad5")
+        }
+    ],
+    feedbacks: [
+        {
+            user: ObjectId("68ebb32c553f466f18e6fad1"),
+            createAt: new Date(),
+            rating: 5,
+            comment: "Very nice room"
+        },
+        {
+            user: ObjectId("68ebb32c553f466f18e6fad1"),
+            createAt: new Date(),
+            rating: 5,
+            comment: "Very nice room"
+        }
+    ]
+})
+
+// Insert SpaceBooking
+db.SpaceBooking.insertMany([
+    {
+        bookedBy: new objectid("68ebb32c553f466f18e6fad1"),
+        startTime: new Date("2021-09-01T00:00:00.000Z"),
+        space: new ObjectId("68ebb80d553f466f18e6fad6"),
+        bookedFacilities: [
+            {
+                facility: {
+                    type: "TV",
+                    totalAmount: 10,
+                    name: "LG TV",
+                    details: {
+                        resolution: "1920x1080",
+                        weight: "10 kg"
+                    },
+                    rentalRates: [
+                        {
+                            time: ObjectId("68ebb63c553f466f18e6fad3"), // Time
+                            costPerUnit: 4
+                        },
+                        {
+                            time: ObjectId("68ebb63c553f466f18e6fad4"), // Time
+                            costPerUnit: 10
+                        },
+                        {
+                            time: ObjectId("68ebb63c553f466f18e6fad5"), // Time
+                            costPerUnit: 20
+                        }
+                    ]
+                },
+                amount: 3
+            }
+        ],
+        selectedRentalRate: {
+            time: new ObjectId("68ebb63c553f466f18e6fad3"),
+            costPerUnit: 0
+        },
+        rentalUnit: 3
+    }
+])
+
+// Query 3
+db.SpaceBooking.aggregate([
+    { $lookup: { localField: "space", foreignField: "_id", as: "spaceObj", from : "Space" }},
+    { $match: { "spaceObj.owners": ObjectId("68ebb32c553f466f18e6fad1") }},
+    { $addField: {
+        newField: "revenue",
+        calculatedField: {
+            $add: []
+        }
+        } },
+    { $group: { } }
+])
+
+// Query 4
+db.Space.find({ availableFacilities: { $elemMatch: { type: "TV" } }})
+
+// Query 5
+db.Space.find({ "locations.location": { $regex: /.*Pathumthani.*/ } })
+
+// Query 6
