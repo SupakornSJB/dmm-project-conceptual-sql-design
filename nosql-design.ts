@@ -32,7 +32,7 @@ export interface SpaceBooking {
     approvedBy: ApprovedBy // Admin approval (may not be necessary)
     reason: string // Reason for booking (may not be necessary)
     startTime: Date
-    bookedAmount: number // I don't understand this
+    rentalUnit: number
     bookedFacilities: BookedFacility[]
     selectedRentalRate: RentalRate,
 
@@ -53,11 +53,22 @@ export interface Promotion { // Special promotion
   applicableUsers: ObjectId[] | "all"
 }
 
-
 export interface Time {
     _id: ObjectId
     description: string
     minutesPerUnit: number
+}
+
+export interface SpaceBookingTemplate {
+    _id: ObjectId
+    space: ObjectId
+    createdBy: ObjectId
+    createdAt: Date
+    updatedAt: Date
+    rentalUnit: number
+    bookedFacilities: BookedFacility[]
+    selectedRentalRate: RentalRate,
+    recurring?: Recurring
 }
 
 // EMBEDDED - These aren't collections, just embeded into collection
@@ -87,7 +98,7 @@ export interface Facility {
 }
 
 export interface BookedFacility {
-    name: string,
+    facility: Facility,
     amount: number
 }
 
@@ -101,4 +112,11 @@ export interface UserFeedback {
 export interface ApprovedBy { // Approved by user id on this date
     userId: ObjectId,
     approvedAt: Date
+}
+
+export interface Recurring {
+    hour: number,
+    minute: number,
+    dayOfWeek: number,
+    bookAheadAmount: number // We cannot let the user book the same room until the end of time, so they can book ahead e.g. 10 times
 }
