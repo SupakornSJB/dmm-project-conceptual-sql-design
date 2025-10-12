@@ -9,6 +9,8 @@ export interface User {
     updatedAt: Date
     accountType: string
     locations: Location[]
+    dateOfBirth: Date // For birth month discount
+    loyaltyPoints: number // For loyalty points
 }
 
 export interface Space {
@@ -27,11 +29,30 @@ export interface SpaceBooking {
     _id: ObjectId
     space: ObjectId
     bookedBy: ObjectId
+    approvedBy: ApprovedBy // Admin approval (may not be necessary)
+    reason: string // Reason for booking (may not be necessary)
     startTime: Date
-    bookedAmount: number
+    bookedAmount: number // I don't understand this
     bookedFacilities: BookedFacility[]
     selectedRentalRate: RentalRate,
+
+    discountApplied: boolean // if repeat customer or birth month add a discount
+    discountType: string // repeat or birth month
+    discountPercentage: number // percentage of discount
+    promotionId: ObjectId // reference promotion
 }
+
+export interface Promotion { // Special promotion
+  _id: ObjectId,
+  code: string,
+  description: string,
+  discountPercent: number,
+  validFrom: Date,
+  validTo: Date,
+  applicableSpaces: ObjectId[] | "all",
+  applicableUsers: ObjectId[] | "all"
+}
+
 
 export interface Time {
     _id: ObjectId
@@ -75,4 +96,9 @@ export interface UserFeedback {
     createAt: Date,
     rating: number,
     comment: string
+}
+
+export interface ApprovedBy { // Approved by user id on this date
+    userId: ObjectId,
+    approvedAt: Date
 }
