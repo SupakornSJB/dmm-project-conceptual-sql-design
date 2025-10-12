@@ -49,8 +49,8 @@ export interface Promotion { // Special promotion
   discountPercent: number,
   validFrom: Date,
   validTo: Date,
-  applicableSpaces: ObjectId[], // or 'all'
-  applicableUsers: ObjectId[]   // or 'all'
+  applicableSpaces: ObjectId[] | "all",
+  applicableUsers: ObjectId[] | "all"
 }
 
 
