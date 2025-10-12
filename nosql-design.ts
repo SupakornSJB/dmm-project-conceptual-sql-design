@@ -27,13 +27,15 @@ export interface SpaceBooking {
     _id: ObjectId
     space: ObjectId
     bookedBy: ObjectId
+    approvedBy: ApprovedBy // Admin approval
+    reason: string // Reason for booking (may not be necessary)
     startTime: Date
-    bookedAmount: number
+    bookedAmount: number // I don't understand this
     bookedFacilities: BookedFacility[]
     selectedRentalRate: RentalRate,
 }
 
-export interface Time {
+export interface Time { // I don't think this is used
     _id: ObjectId
     description: string
     minutesPerUnit: number
@@ -75,4 +77,9 @@ export interface UserFeedback {
     createAt: Date,
     rating: number,
     comment: string
+}
+
+export interface ApprovedBy { // Approved by user id on this date
+    userId: ObjectId,
+    approvedAt: Date
 }
