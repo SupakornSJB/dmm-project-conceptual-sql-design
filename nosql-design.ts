@@ -27,7 +27,7 @@ export interface SpaceBooking {
     _id: ObjectId
     space: ObjectId
     bookedBy: ObjectId
-    approvedBy: ApprovedBy // Admin approval
+    approvedBy: ApprovedBy // Admin approval (may not be necessary)
     reason: string // Reason for booking (may not be necessary)
     startTime: Date
     bookedAmount: number // I don't understand this
@@ -35,7 +35,7 @@ export interface SpaceBooking {
     selectedRentalRate: RentalRate,
 }
 
-export interface Time { // I don't think this is used
+export interface Time {
     _id: ObjectId
     description: string
     minutesPerUnit: number
