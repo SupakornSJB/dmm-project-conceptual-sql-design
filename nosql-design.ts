@@ -11,6 +11,7 @@ export interface User {
     locations: Location[]
     dateOfBirth: Date // For birth month discount
     loyaltyPoints: number // For loyalty points
+    bookingTemplates: SpaceBookingTemplate[]
 }
 
 export interface Space {
@@ -59,18 +60,6 @@ export interface Time {
     minutesPerUnit: number
 }
 
-export interface SpaceBookingTemplate {
-    _id: ObjectId
-    space: ObjectId
-    createdBy: ObjectId
-    createdAt: Date
-    updatedAt: Date
-    rentalUnit: number
-    bookedFacilities: BookedFacility[]
-    selectedRentalRate: RentalRate,
-    recurring?: Recurring
-}
-
 // EMBEDDED - These aren't collections, just embeded into collection
 export interface Location {
     name: string
@@ -112,6 +101,17 @@ export interface UserFeedback {
 export interface ApprovedBy { // Approved by user id on this date
     userId: ObjectId,
     approvedAt: Date
+}
+
+export interface SpaceBookingTemplate {
+    _id: ObjectId
+    space: ObjectId
+    createdAt: Date
+    updatedAt: Date
+    rentalUnit: number
+    bookedFacilities: BookedFacility[]
+    selectedRentalRate: RentalRate,
+    recurring?: Recurring
 }
 
 export interface Recurring {
