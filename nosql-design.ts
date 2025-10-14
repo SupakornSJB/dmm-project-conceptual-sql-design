@@ -134,5 +134,5 @@ export interface Refund {
     amount: Number,
     decidedAt: Date,
     method: String,
-    status: String
+    refundState: String
 }
