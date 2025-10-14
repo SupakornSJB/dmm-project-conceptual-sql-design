@@ -14,7 +14,7 @@
 import { faker } from "@faker-js/faker";
 import { MongoClient, ObjectId } from "mongodb";
 
-const uri = "mongodb+srv://st126233_db_user:ourspace_123@dmmcluster0.6jppzxb.mongodb.net/";
+const uri = "mongodb+srv://<db_user>:<db_password>@dmmcluster0.6jppzxb.mongodb.net/";
 const client = new MongoClient(uri);
 const dbName = "ourspace_2";
 
