@@ -41,6 +41,8 @@ export interface SpaceBooking {
     discountType: string // repeat or birth month
     discountPercentage: number // percentage of discount
     promotionId: ObjectId // reference promotion
+
+    status: Status //embedded to Status
 }
 
 export interface Promotion { // Special promotion
@@ -119,4 +121,18 @@ export interface Recurring {
     minute: number,
     dayOfWeek: number,
     bookAheadAmount: number // We cannot let the user book the same room until the end of time, so they can book ahead e.g. 10 times
+}
+
+export interface Status {
+    statusType: String,
+    reason: String,
+    refund: Refund //embedded to Refund
+}
+
+export interface Refund {
+    eligible: Boolean,
+    amount: Number,
+    decidedAt: Date,
+    method: String,
+    refundState: String
 }
