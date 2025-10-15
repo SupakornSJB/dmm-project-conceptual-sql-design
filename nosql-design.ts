@@ -106,7 +106,6 @@ export interface ApprovedBy { // Approved by user id on this date
 }
 
 export interface SpaceBookingTemplate {
-    _id: ObjectId
     space: ObjectId
     createdAt: Date
     updatedAt: Date

@@ -26,7 +26,7 @@ db.Space.insertOne({
     name: "AIT CSIM Building",
     description: "This is the AIT CSIM Building, use it however you want.",
     owners: [
-        ObjectId("68ebb32c553f466f18e6fad1")
+        ObjectId("68ed3aaaea3b55ff9e0df214")
     ],
     locations: {
         name: "AIT",
@@ -49,15 +49,15 @@ db.Space.insertOne({
             },
             rentalRates: [
                 {
-                    time: ObjectId("68ebb63c553f466f18e6fad3"), // Time
+                    time: ObjectId("68ed3aaaea3b55ff9e0df211"), // Time
                     costPerUnit: 4
                 },
                 {
-                    time: ObjectId("68ebb63c553f466f18e6fad4"), // Time
+                    time: ObjectId("68ed3aaaea3b55ff9e0df212"), // Time
                     costPerUnit: 10
                 },
                 {
-                    time: ObjectId("68ebb63c553f466f18e6fad5"), // Time
+                    time: ObjectId("68ed3aaaea3b55ff9e0df212"), // Time
                     costPerUnit: 20
                 }
             ]
@@ -66,26 +66,26 @@ db.Space.insertOne({
     rentalRates: [
         {
             costPerUnit: 180,
-            time: ObjectId("68ebb63c553f466f18e6fad3")
+            time: ObjectId("68ed3aaaea3b55ff9e0df211")
         },
         {
             costPerUnit: 100,
-            time: ObjectId("68ebb63c553f466f18e6fad4")
+            time: ObjectId("68ed3aaaea3b55ff9e0df212")
         },
         {
             costPerUnit: 100,
-            time: ObjectId("68ebb63c553f466f18e6fad5")
+            time: ObjectId("68ed3aaaea3b55ff9e0df213")
         }
     ],
     feedbacks: [
         {
-            user: ObjectId("68ebb32c553f466f18e6fad1"),
+            user: ObjectId("68ed3aaaea3b55ff9e0df214"),
             createAt: new Date(),
             rating: 5,
             comment: "Very nice room"
         },
         {
-            user: ObjectId("68ebb32c553f466f18e6fad1"),
+            user: ObjectId("68ed3aaaea3b55ff9e0df214"),
             createAt: new Date(),
             rating: 5,
             comment: "Very nice room"
@@ -111,15 +111,15 @@ db.SpaceBooking.insertMany([
                     },
                     rentalRates: [
                         {
-                            time: ObjectId("68ebb63c553f466f18e6fad3"), // Time
+                            time: ObjectId("68ed3aaaea3b55ff9e0df211"), // Time
                             costPerUnit: 4
                         },
                         {
-                            time: ObjectId("68ebb63c553f466f18e6fad4"), // Time
+                            time: ObjectId("68ed3aaaea3b55ff9e0df212"), // Time
                             costPerUnit: 10
                         },
                         {
-                            time: ObjectId("68ebb63c553f466f18e6fad5"), // Time
+                            time: ObjectId("68ed3aaaea3b55ff9e0df213"), // Time
                             costPerUnit: 20
                         }
                     ]
@@ -128,8 +128,8 @@ db.SpaceBooking.insertMany([
             }
         ],
         selectedRentalRate: {
-            time: new ObjectId("68ebb63c553f466f18e6fad3"),
-            costPerUnit: 0
+            time: new ObjectId("68ed3aaaea3b55ff9e0df211"),
+            costPerUnit: 10
         },
         rentalUnit: 3
     }
@@ -137,15 +137,34 @@ db.SpaceBooking.insertMany([
 
 // Query 3
 db.SpaceBooking.aggregate([
+    { $unwind: "$bookedFacilities" },
+    { $unwind: "$bookedFacilities.facility.rentalRates"},
     { $lookup: { localField: "space", foreignField: "_id", as: "spaceObj", from : "Space" }},
-    { $match: { "spaceObj.owners": ObjectId("68ebb32c553f466f18e6fad1") }},
-    { $addField: {
-        newField: "revenue",
-        calculatedField: {
-            $add: []
+    { $unwind: "$spaceObj" },
+    { $match: { "spaceObj.owners": ObjectId("68ed3aaaea3b55ff9e0df214") }},
+    { $lookup: { from: "Time", localField: "selectedRentalRate.time", foreignField: "_id", as: "timeInfo" } },
+    { $unwind: "$timeInfo" },
+    {
+        $match: {
+            $and: [
+                {
+                    $expr: {
+                        $eq : [ "$bookedFacilities.facility.rentalRates.time", "$selectedRentalRate.time" ]
+                    }
+                }
+            ]
         }
-        } },
-    { $group: { } }
+    },
+    { $addFields: { facilityRevenue: { $multiply: ["$rentalUnit", "$bookedFacilities.amount", "$bookedFacilities.facility.rentalRates.costPerUnit"] } } },
+    { $group: { "_id": "$space", revenueSum: { $sum: "$facilityRevenue" } } },
+    { $unionWith: { coll: "SpaceBooking", pipeline: [
+        { $addFields: { revenue: { $multiply: ["$rentalUnit", "$selectedRentalRate.costPerUnit"] } } },
+        { $group: { "_id": "$space", revenueSum: { $sum: "$revenue" } } }
+    ]} },
+    { $group: { "_id": "$_id", totalSum: { $sum: "$revenueSum" } } },
+    { $lookup: { localField: "_id", foreignField: "_id", as: "spaceObj", from : "Space" }},
+    { $project: { "spaceObj.name": 1, totalSum: 1 } },
+    { $sort: { totalSum: -1 } }
 ])
 
 // Query 4
@@ -155,3 +174,145 @@ db.Space.find({ availableFacilities: { $elemMatch: { type: "TV" } }})
 db.Space.find({ "locations.location": { $regex: /.*Pathumthani.*/ } })
 
 // Query 6
+const toBook = { name: "Magnetic Whiteboard", amount: 1 }
+const total = db.Space.aggregate(
+    { $match: { "_id": ObjectId("68ed3aaaea3b55ff9e0df278") } },
+    { $unwind: "$availableFacilities" },
+    { $match: { "availableFacilities.name": toBook.name } },
+    { $project: { "availableFacilities.name": 1, "availableFacilities.totalAmount": 1 } }
+)
+
+const booked = db.SpaceBooking.aggregate([
+    { $match: { space: ObjectId("68ed3aaaea3b55ff9e0df278") } },
+    { $unwind: "$bookedFacilities" },
+    { $unwind: "$bookedFacilities.facility.rentalRates"},
+    { $lookup: { from: "Time", localField: "selectedRentalRate.time", foreignField: "_id", as: "timeInfo" } },
+    { $unwind: "$timeInfo" },
+    {
+        $match: {
+            $and: [
+                { "bookedFacilities.facility.name": toBook.name },
+                {
+                    $expr: {
+                        $eq : [ "$bookedFacilities.facility.rentalRates.time", "$selectedRentalRate.time" ]
+                    }
+                }
+            ]
+        }
+    },
+    { $addFields: { endTime: { $dateAdd: { startDate: "$startTime", unit: "minute", amount: { $multiply : ["$timeInfo.minutePerUnit", "$rentalUnit"] } } } } },
+    { $match: {
+        $expr:
+            { $and: [
+                { $lte: ["$startTime", ISODate("2025-10-30T02:00:00.000Z")] },
+                { $lte: [ISODate("2025-10-01T00:00:00.000Z"), "$endTime"] }
+            ]
+       }
+    }},
+    { $group: { "_id": "$bookedFacilities.facility.name", usage: { $sum: "$bookedFacilities.amount" } } }
+])
+
+if (total["availableFacilities"]["totalAmount"] - (toBook["amount"] + booked["usage"]) > 0) {
+    db.SpaceBooking.updateOne({ "_id": ObjectId("68ed3aadea3b55ff9e0df3d1") },
+        { $push: {
+            bookedFacilities: {
+                type: "TV",
+                totalAmount: 10,
+                name: "LG TV",
+                details: {
+                    resolution: "1920x1080",
+                    weight: "10 kg"
+                },
+                rentalRates: [
+                    {
+                        time: ObjectId("68ed3aaaea3b55ff9e0df211"), // Time
+                        costPerUnit: 4
+                    },
+                    {
+                        time: ObjectId("68ed3aaaea3b55ff9e0df212"), // Time
+                        costPerUnit: 10
+                    },
+                    {
+                        time: ObjectId("68ed3aaaea3b55ff9e0df213"), // Time
+                        costPerUnit: 20
+                    }
+                ]
+            },
+            amount: toBook["amount"]
+        } }
+    )
+}
+
+// Query 19
+db.SpaceBooking.aggregate([
+    { $unwind: "$bookedFacilities" },
+    { $unwind: "$bookedFacilities.facility.rentalRates"},
+    { $lookup: { localField: "space", foreignField: "_id", as: "spaceObj", from : "Space" }},
+    { $unwind: "$spaceObj" },
+    { $match: { "spaceObj.owners": ObjectId("68ed3aaaea3b55ff9e0df26a") }},
+    { $lookup: { from: "Time", localField: "selectedRentalRate.time", foreignField: "_id", as: "timeInfo" } },
+    { $unwind: "$timeInfo" },
+    { $match: {
+        $expr: {
+            $eq : [ "$bookedFacilities.facility.rentalRates.time", "$selectedRentalRate.time" ]
+        } }
+    },
+    { $addFields: { facilityRevenue: { $multiply: ["$rentalUnit", "$bookedFacilities.amount", "$bookedFacilities.facility.rentalRates.costPerUnit"] } } },
+    { $group: { "_id": "$space", revenueSum: { $sum: "$facilityRevenue" } } },
+    { $unionWith: { coll: "SpaceBooking", pipeline: [
+        { $addFields: { revenue: { $multiply: ["$rentalUnit", "$selectedRentalRate.costPerUnit"] } } },
+        { $group: { "_id": "$space", revenueSum: { $sum: "$revenue" } } }
+    ]} },
+    { $group: { "_id": "$_id", totalSum: { $sum: "$revenueSum" } } },
+    { $lookup: { localField: "_id", foreignField: "_id", as: "spaceObj", from : "Space" }},
+    { $project: { "spaceObj.name": 1, totalSum: 1 } },
+    { $addFields: { platformRevenue: { $multiply: ["$totalSum", 0.03] } } },
+    { $addFields: { ownerRevenue: { $multiply: ["$totalSum", 0.97] } } },
+    { $unwind: "$spaceObj" },
+    { $sort: { totalSum: -1 }}
+])
+
+// Query New 1
+db.User.updateOne({ "_id": ObjectId("68ebb32c553f466f18e6fad1") }, {
+    $push: { bookingTemplates : {
+        space: ObjectId("68ebb80d553f466f18e6fad6"),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        rentalUnit: 3,
+        bookedFacilities: [
+            {
+                type: "TV",
+                totalAmount: 10,
+                name: "LG TV",
+                details: {
+                    resolution: "1920x1080",
+                    weight: "10 kg"
+                },
+                rentalRates: [
+                    {
+                        time: ObjectId("68ebb63c553f466f18e6fad3"),
+                        costPerUnit: 4
+                    },
+                    {
+                        time: ObjectId("68ebb63c553f466f18e6fad4"),
+                        costPerUnit: 10
+                    },
+                    {
+                        time: ObjectId("68ebb63c553f466f18e6fad5"),
+                        costPerUnit: 20
+                    },
+                ]
+            }
+        ],
+        selectedRentalRate: {
+            time: ObjectId("68ebb63c553f466f18e6fad3"),
+            costPerUnit: 10
+        },
+        recurring: {
+            hour: 9,
+            minute: 30,
+            dayOfWeek: "THU",
+            bookAheadAmount: 10
+        },
+    } }
+})
