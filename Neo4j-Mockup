@@ -1,0 +1,393 @@
+// ---------- RESET (nodes only; keeps constraints/indexes) ----------
+MATCH (n) DETACH DELETE n;
+
+// ---------- STATIC LOOKUPS ----------
+CREATE (:TimeUnit {timeUnitId: randomUUID(), name:'hour',     minutesPerUnit:60});
+CREATE (:TimeUnit {timeUnitId: randomUUID(), name:'half_day', minutesPerUnit:720});
+CREATE (:TimeUnit {timeUnitId: randomUUID(), name:'full_day', minutesPerUnit:1440});
+
+UNWIND [
+  {name:'Projector',     type:'projector', totalAmount:20},
+  {name:'Wifi',          type:'internet',  totalAmount:500},
+  {name:'Printer',       type:'printer',   totalAmount:10},
+  {name:'Audio System',  type:'audio',     totalAmount:25},
+  {name:'Whiteboard',    type:'board',     totalAmount:40}
+] AS f
+CREATE (:Facility {facilityId: randomUUID(), name:f.name, type:f.type, totalAmount:f.totalAmount});
+
+// ---------- USERS (100 total: 2 owners + 98 customers with real names) ----------
+UNWIND [
+  {name:'Supakorn', email:'owner1@ourspace.test', accountType:'owner', joinedAt:'2025-01-10'},
+  {name:'Waranon',  email:'owner2@ourspace.test', accountType:'owner', joinedAt:'2025-04-20'},
+
+  // --- customers ---
+  {name:'Prasiddha', email:'customer1@ourspace.test'},
+  {name:'Nattaya',   email:'customer2@ourspace.test'},
+  {name:'Somchai',   email:'customer3@ourspace.test'},
+  {name:'Kanya',     email:'customer4@ourspace.test'},
+  {name:'Jirawat',   email:'customer5@ourspace.test'},
+  {name:'Patt',      email:'customer6@ourspace.test'},
+  {name:'Chai',      email:'customer7@ourspace.test'},
+  {name:'Mint',      email:'customer8@ourspace.test'},
+  {name:'Wichai',    email:'customer9@ourspace.test'},
+  {name:'Suda',      email:'customer10@ourspace.test'},
+  {name:'Anucha',    email:'customer11@ourspace.test'},
+  {name:'Malee',     email:'customer12@ourspace.test'},
+  {name:'Arthit',    email:'customer13@ourspace.test'},
+  {name:'Niran',     email:'customer14@ourspace.test'},
+  {name:'Pimchanok', email:'customer15@ourspace.test'},
+  {name:'Thanawat',  email:'customer16@ourspace.test'},
+  {name:'Siriporn',  email:'customer17@ourspace.test'},
+  {name:'Akkarapon', email:'customer18@ourspace.test'},
+  {name:'Warisa',    email:'customer19@ourspace.test'},
+  {name:'Krit',      email:'customer20@ourspace.test'},
+  {name:'Thanaporn', email:'customer21@ourspace.test'},
+  {name:'Natthapong',email:'customer22@ourspace.test'},
+  {name:'Ploy',      email:'customer23@ourspace.test'},
+  {name:'Sarawut',   email:'customer24@ourspace.test'},
+  {name:'Thanya',    email:'customer25@ourspace.test'},
+  {name:'Peerawat',  email:'customer26@ourspace.test'},
+  {name:'Chanakan',  email:'customer27@ourspace.test'},
+  {name:'Supaporn',  email:'customer28@ourspace.test'},
+  {name:'Nopphadon', email:'customer29@ourspace.test'},
+  {name:'Sirin',     email:'customer30@ourspace.test'},
+  {name:'Phurit',    email:'customer31@ourspace.test'},
+  {name:'Arisa',     email:'customer32@ourspace.test'},
+  {name:'Boonchai',  email:'customer33@ourspace.test'},
+  {name:'Patchara',  email:'customer34@ourspace.test'},
+  {name:'Somporn',   email:'customer35@ourspace.test'},
+  {name:'Phanumas',  email:'customer36@ourspace.test'},
+  {name:'Pattarawadee', email:'customer37@ourspace.test'},
+  {name:'Jaturon',   email:'customer38@ourspace.test'},
+  {name:'Nicha',     email:'customer39@ourspace.test'},
+  {name:'Wuttichai', email:'customer40@ourspace.test'},
+  {name:'Rattanaporn', email:'customer41@ourspace.test'},
+  {name:'Teerapat',  email:'customer42@ourspace.test'},
+  {name:'Aom',       email:'customer43@ourspace.test'},
+  {name:'Metha',     email:'customer44@ourspace.test'},
+  {name:'Bow',       email:'customer45@ourspace.test'},
+  {name:'Phanuphong',email:'customer46@ourspace.test'},
+  {name:'Fon',       email:'customer47@ourspace.test'},
+  {name:'Tawan',     email:'customer48@ourspace.test'},
+  {name:'Nook',      email:'customer49@ourspace.test'},
+  {name:'Pairoj',    email:'customer50@ourspace.test'},
+  {name:'Sasi',      email:'customer51@ourspace.test'},
+  {name:'Gun',       email:'customer52@ourspace.test'},
+  {name:'Prae',      email:'customer53@ourspace.test'},
+  {name:'Ice',       email:'customer54@ourspace.test'},
+  {name:'Pond',      email:'customer55@ourspace.test'},
+  {name:'Earn',      email:'customer56@ourspace.test'},
+  {name:'Time',      email:'customer57@ourspace.test'},
+  {name:'Aoy',       email:'customer58@ourspace.test'},
+  {name:'Game',      email:'customer59@ourspace.test'},
+  {name:'Beam',      email:'customer60@ourspace.test'},
+  {name:'Ton',       email:'customer61@ourspace.test'},
+  {name:'Oil',       email:'customer62@ourspace.test'},
+  {name:'View',      email:'customer63@ourspace.test'},
+  {name:'Tee',       email:'customer64@ourspace.test'},
+  {name:'Namtan',    email:'customer65@ourspace.test'},
+  {name:'Nine',      email:'customer66@ourspace.test'},
+  {name:'Dream',     email:'customer67@ourspace.test'},
+  {name:'June',      email:'customer68@ourspace.test'},
+  {name:'Ployfon',   email:'customer69@ourspace.test'},
+  {name:'Baifern',   email:'customer70@ourspace.test'},
+  {name:'Mild',      email:'customer71@ourspace.test'},
+  {name:'Praew',     email:'customer72@ourspace.test'},
+  {name:'Korn',      email:'customer73@ourspace.test'},
+  {name:'Boss',      email:'customer74@ourspace.test'},
+  {name:'Wave',      email:'customer75@ourspace.test'},
+  {name:'Tan',       email:'customer76@ourspace.test'},
+  {name:'Champ',     email:'customer77@ourspace.test'},
+  {name:'Fluke',     email:'customer78@ourspace.test'},
+  {name:'Ken',       email:'customer79@ourspace.test'},
+  {name:'Mook',      email:'customer80@ourspace.test'},
+  {name:'Ging',      email:'customer81@ourspace.test'},
+  {name:'Pear',      email:'customer82@ourspace.test'},
+  {name:'Nene',      email:'customer83@ourspace.test'},
+  {name:'Nam',       email:'customer84@ourspace.test'},
+  {name:'Mind',      email:'customer85@ourspace.test'},
+  {name:'Cake',      email:'customer86@ourspace.test'},
+  {name:'Dear',      email:'customer87@ourspace.test'},
+  {name:'Fah',       email:'customer88@ourspace.test'},
+  {name:'Grace',     email:'customer89@ourspace.test'},
+  {name:'Jam',       email:'customer90@ourspace.test'},
+  {name:'Kiwi',      email:'customer91@ourspace.test'},
+  {name:'Lina',      email:'customer92@ourspace.test'},
+  {name:'Mina',      email:'customer93@ourspace.test'},
+  {name:'Nara',      email:'customer94@ourspace.test'},
+  {name:'Pai',       email:'customer95@ourspace.test'},
+  {name:'Ray',       email:'customer96@ourspace.test'},
+  {name:'Sky',       email:'customer97@ourspace.test'},
+  {name:'Tukta',     email:'customer98@ourspace.test'}
+] AS u
+WITH u,
+     CASE
+       WHEN u.joinedAt IS NOT NULL THEN date(u.joinedAt)
+       ELSE date('2025-01-01') +
+            duration({days:
+              coalesce(
+                toInteger(replace(replace(u.email,'customer',''), '@ourspace.test','')),
+                0
+              )
+            })
+     END AS joinDate
+CREATE (:User {
+  userId:randomUUID(),
+  name:u.name,
+  email:u.email,
+  accountType: coalesce(u.accountType,'customer'),
+  joinedAt: joinDate
+});
+
+// ---------- SPACES + OWNERS ----------
+UNWIND [
+  {name:'CoWork Central',  description:'large open space',               location:'Pathumthani', capacitySize:80,  capacityLabel:'Large', baseCurrency:'THB', owner:'owner1@ourspace.test'},
+  {name:'Meeting Room A',  description:'small meeting room',             location:'Bangkok',     capacitySize:8,   capacityLabel:'Small', baseCurrency:'THB', owner:'owner1@ourspace.test'},
+  {name:'Presentation Hall',description:'projector ready hall',          location:'Pathumthani', capacitySize:120, capacityLabel:'XL',    baseCurrency:'THB', owner:'owner2@ourspace.test'},
+  {name:'Studio Room',     description:'for tutorials and recordings',   location:'Bangkok',     capacitySize:30,  capacityLabel:'Medium', baseCurrency:'THB', owner:'owner2@ourspace.test'},
+  {name:'Training Room B', description:'classroom layout with whiteboard',location:'Bangkok',    capacitySize:18,  capacityLabel:'Small', baseCurrency:'THB', owner:'owner2@ourspace.test'}
+] AS s
+MATCH (o:User {email:s.owner})
+CREATE (sp:Space {
+  spaceId: randomUUID(),
+  name:s.name, description:s.description, location:s.location,
+  capacitySize:s.capacitySize, capacityLabel:s.capacityLabel, baseCurrency:s.baseCurrency
+})
+CREATE (o)-[:OWNS]->(sp);
+
+// ---------- SPACE FACILITIES ----------
+UNWIND [
+  {space:'CoWork Central',   items:[['Wifi',200],['Projector',2],['Whiteboard',4]]},
+  {space:'Meeting Room A',   items:[['Wifi',20], ['Projector',1],['Whiteboard',1]]},
+  {space:'Presentation Hall',items:[['Wifi',300],['Projector',4],['Audio System',2]]},
+  {space:'Studio Room',      items:[['Wifi',80], ['Printer',1]]},
+  {space:'Training Room B',  items:[['Wifi',40], ['Whiteboard',2],['Projector',1]]}
+] AS cfg
+MATCH (sp:Space {name:cfg.space})
+UNWIND cfg.items AS it
+MATCH (f:Facility {name:it[0]})
+CREATE (sp)-[:HAS_FACILITY {count: toInteger(it[1])}]->(f);
+
+// ---------- RATES (Neo4j-safe FOREACH; no MATCH inside FOREACH) ----------
+UNWIND [
+  {space:'CoWork Central',hour:300,half:1200,day:2000},
+  {space:'Meeting Room A',hour:150,half:500,day:1500},
+  {space:'Presentation Hall',hour:600,half:null,day:2200},
+  {space:'Studio Room',hour:220,half:800,day:1600},
+  {space:'Training Room B',hour:200,half:700,day:1400}
+] AS r
+MATCH (sp:Space {name:r.space})
+OPTIONAL MATCH (tuH:TimeUnit {name:'hour'})
+OPTIONAL MATCH (tuHalf:TimeUnit {name:'half_day'})
+OPTIONAL MATCH (tuDay:TimeUnit {name:'full_day'})
+WITH sp, r, tuH, tuHalf, tuDay
+
+// hour
+FOREACH (_ IN CASE WHEN r.hour IS NULL OR tuH IS NULL THEN [] ELSE [1] END |
+  CREATE (rateH:Rate {rateId:randomUUID(), costPerUnit:r.hour})
+  CREATE (sp)-[:HAS_RATE]->(rateH)
+  CREATE (rateH)-[:FOR_TIME]->(tuH)
+)
+
+// half_day
+FOREACH (_ IN CASE WHEN r.half IS NULL OR tuHalf IS NULL THEN [] ELSE [1] END |
+  CREATE (rateHalf:Rate {rateId:randomUUID(), costPerUnit:r.half})
+  CREATE (sp)-[:HAS_RATE]->(rateHalf)
+  CREATE (rateHalf)-[:FOR_TIME]->(tuHalf)
+)
+
+// full_day
+FOREACH (_ IN CASE WHEN r.day IS NULL OR tuDay IS NULL THEN [] ELSE [1] END |
+  CREATE (rateDay:Rate {rateId:randomUUID(), costPerUnit:r.day})
+  CREATE (sp)-[:HAS_RATE]->(rateDay)
+  CREATE (rateDay)-[:FOR_TIME]->(tuDay)
+);
+
+       // ---------- BOOKINGS (1–3 per customer; ensure ≥1 COMPLETED; use any Rate node) ----------
+MATCH (c:User {accountType:'customer'})
+WITH collect(c) AS custs
+UNWIND custs AS cust
+WITH cust, 1 + toInteger(rand()*3) AS num
+UNWIND range(1, num) AS k
+MATCH (sp:Space)
+WITH cust, k, collect(sp) AS spaces
+WITH
+  cust, k,
+  spaces[toInteger(rand()*size(spaces))] AS space,
+  datetime('2025-10-01T09:00:00') + duration({days: toInteger(rand()*60), hours:(k % 4)*2}) AS startAt
+
+// pick a random available rate for that space (hour | half_day | full_day)
+MATCH (space)-[:HAS_RATE]->(rate)-[:FOR_TIME]->(tu:TimeUnit)
+WITH cust, k, space, startAt, collect({rate:rate, tu:tu}) AS opts
+WITH cust, k, space, startAt, opts, size(opts) AS n
+WITH cust, k, space, startAt, opts[toInteger(rand()*n)] AS pick
+WITH cust, k, space, startAt,
+     pick.rate  AS rate,
+     pick.tu    AS tu,
+     pick.tu.name AS timeUnitName,
+     pick.tu.minutesPerUnit AS mpu
+
+// decide units based on chosen time unit
+WITH cust, k, space, startAt, rate, tu, timeUnitName, mpu,
+     CASE timeUnitName
+       WHEN 'hour'      THEN 1 + toInteger(rand()*4)   // 1..5 hours
+       WHEN 'half_day'  THEN 1                         // 1 half-day
+       WHEN 'full_day'  THEN 1                         // 1 day
+       ELSE 1
+     END AS units
+
+WITH cust, space, startAt, units, rate, tu, timeUnitName, mpu,
+     CASE
+       WHEN k = 1 THEN 'COMPLETED'
+       WHEN rand() < 0.20 THEN 'CANCELLED'
+       WHEN rand() < 0.50 THEN 'CONFIRMED'
+       ELSE 'COMPLETED'
+     END AS status,
+     startAt + duration({minutes: mpu * units}) AS endAt
+
+// create booking
+CREATE (b:Booking {
+  bookingId: randomUUID(),
+  startTime: startAt,
+  endTime:   endAt,
+  rentalUnit: units,
+  timeUnit:  timeUnitName,      // 'hour' | 'half_day' | 'full_day'
+  status: status,
+  discountApplied: false,
+  totalCost: rate.costPerUnit * units
+})
+
+// main relations
+WITH cust, space, rate, b, status
+CREATE (cust)-[:BOOKED]->(b)
+CREATE (b)-[:BOOKS]->(space)
+CREATE (b)-[:USED_RATE]->(rate)
+
+// random feedback RELATIONSHIP (only for COMPLETED bookings)
+WITH cust, b, space, status,
+     ['Nice location',
+      'Very clean space',
+      'Good facilities',
+      'Cozy but a bit small',
+      'Too noisy during the day',
+      'Comfortable and quiet',
+      'Great for meetings',
+      'Lighting could be better'] AS comments
+FOREACH (_ IN CASE WHEN status = 'COMPLETED' THEN [1] ELSE [] END |
+  CREATE (cust)-[:GIVE_FEEDBACK {
+    rating: 3 + toInteger(rand()*3),                     // 3–5
+    comment: comments[toInteger(rand()*size(comments))], // random text
+    createdAt: b.endTime + duration({hours: 1 + toInteger(rand()*12)})
+  }]->(b)
+)
+
+// optional facility reservation as before
+WITH b, space
+OPTIONAL MATCH (space)-[:HAS_FACILITY]->(f)
+WITH b, f ORDER BY rand()
+WITH b, collect(f)[0] AS f
+FOREACH (_ IN CASE WHEN f IS NULL THEN [] ELSE [1] END |
+  CREATE (b)-[:RESERVES {amount:1}]->(f)
+);
+
+// ---------- PROMOTIONS (two codes, user-targeted) ----------
+UNWIND [
+  {
+    code:'WELCOME-10',
+    discountPercent:10, discountAmount:null,
+    minSpend:0, maxDiscount:300,
+    validFrom:date('2025-01-01'), validTo:date('2025-12-31'),
+    appliesTo:['CoWork Central','Meeting Room A'],
+    recipients:[
+      'customer1@ourspace.test','customer5@ourspace.test','customer20@ourspace.test',
+      'customer31@ourspace.test','customer42@ourspace.test','customer54@ourspace.test',
+      'customer68@ourspace.test','customer77@ourspace.test','customer85@ourspace.test',
+      'customer89@ourspace.test'
+    ]
+  },
+  {
+    code:'BKK-15',
+    discountPercent:15, discountAmount:null,
+    minSpend:300, maxDiscount:400,
+    validFrom:date('2025-09-01'), validTo:date('2026-03-31'),
+    appliesTo:['Meeting Room A'],
+    recipients:[
+      'customer9@ourspace.test','customer13@ourspace.test','customer23@ourspace.test',
+      'customer33@ourspace.test','customer43@ourspace.test','customer53@ourspace.test',
+      'customer63@ourspace.test','customer73@ourspace.test','customer83@ourspace.test'
+    ]
+  }
+] AS row
+MERGE (p:Promotion {code: row.code})
+ON CREATE SET p.promoId = randomUUID()
+SET p.discountPercent = row.discountPercent,
+    p.discountAmount  = row.discountAmount,
+    p.minSpend        = row.minSpend,
+    p.maxDiscount     = row.maxDiscount,
+    p.validFrom       = row.validFrom,
+    p.validTo         = row.validTo,
+    p.stackable       = false,
+    p.usageLimit      = 100000,
+    p.perUserLimit    = 3
+
+// link to spaces
+WITH p, row
+UNWIND coalesce(row.appliesTo,[]) AS spaceName
+MATCH (s:Space {name:spaceName})
+MERGE (p)-[:APPLIES_TO]->(s)
+
+// link to specific users
+WITH p, row
+UNWIND coalesce(row.recipients,[]) AS email
+MATCH (u:User {email:email})
+MERGE (p)-[:ELIGIBLE_FOR]->(u);
+
+// -------- REFUND --------
+UNWIND [
+  {email:'customer55@ourspace.test', reason:'due to maintenance'},                         // Pond
+  {email:'customer6@ourspace.test',  reason:'due to maintenance'},                         // Patt
+  {email:'customer22@ourspace.test', reason:'due to weather and location-based alerts'},   // Natthapong
+  {email:'customer35@ourspace.test', reason:'due to weather and location-based alerts'}    // Somporn
+] AS row
+
+WITH row,
+     CASE row.email
+       WHEN 'customer55@ourspace.test' THEN 'CASH'
+       WHEN 'customer6@ourspace.test'  THEN 'TRANSFER'
+       WHEN 'customer22@ourspace.test' THEN 'CASH'
+       WHEN 'customer35@ourspace.test' THEN 'TRANSFER'
+     END AS method
+
+MATCH (u:User {email:row.email})-[:BOOKED]->(b:Booking)-[:BOOKS]->(sp:Space)
+WITH row, method, u, sp, b
+ORDER BY b.startTime DESC
+WITH row, method, u, sp, collect(b)[0] AS b
+WHERE b IS NOT NULL AND NOT EXISTS { MATCH (:Refund)-[:FOR_BOOKING]->(b) }
+
+SET b.status = 'CANCELLED',
+    b.cancelledAt = datetime(),
+    b.cancelReason = row.reason
+
+CREATE (r:Refund {
+  refundId: randomUUID(),
+  name: 'Refund',              
+  reason: row.reason,
+  eligible: true,
+  amount: coalesce(b.totalCost,0),
+  decidedAt: datetime(),
+  method: method,
+  state: 'COMPLETED',
+  affectedLocation: sp.location
+})
+
+MERGE (u)-[:REFUND_PROCESS]->(r)
+MERGE (r)-[:FOR_BOOKING]->(b)
+
+RETURN row.email AS email,
+       row.reason AS reason,
+       b.bookingId AS bookingId,
+       r.method AS paymentMethod,
+       r.amount AS amount,
+       r.affectedLocation AS location,
+       r.name AS caption;
+
