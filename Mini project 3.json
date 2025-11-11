@@ -1,0 +1,347 @@
+{
+  "nodes": [
+    {
+      "id": "n0",
+      "position": {
+        "x": 641.6702850162202,
+        "y": 365.647750889306
+      },
+      "caption": "TimeUnit",
+      "labels": [
+        "TimeUnit"
+      ],
+      "properties": {
+        "timeUnitId": "1",
+        "name": "hour",
+        "minutesPerUnit": "60"
+      },
+      "style": {
+        "label-position": "outside",
+        "property-alignment": "center",
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n1",
+      "position": {
+        "x": 425.4379351335685,
+        "y": 423.99575140837356
+      },
+      "caption": "Facility",
+      "labels": [
+        "Facility"
+      ],
+      "properties": {
+        "facilityId": "1",
+        "name": "Projector",
+        "type": "projector",
+        "totalAmount": "5"
+      },
+      "style": {
+        "label-border-color": "#000000",
+        "label-position": "outside",
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n2",
+      "position": {
+        "x": 161.16956972907775,
+        "y": 166.14577309443285
+      },
+      "caption": "User ",
+      "labels": [
+        "User "
+      ],
+      "properties": {
+        "userId": "1",
+        "name": "Supakorn",
+        "email": "owner1@ourspace.test",
+        "accountType": "owner",
+        "joinedAt": "date('2025-01-10')",
+        "birthDate": "date('2025-01-10')"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n3",
+      "position": {
+        "x": 487.18599145055117,
+        "y": 211.9097347335612
+      },
+      "caption": "Space ",
+      "labels": [
+        "Space "
+      ],
+      "properties": {
+        "spaceId": "1",
+        "name": "CoWork Central",
+        "description": "large open space",
+        "location": "Pathumthani",
+        "capacitySize": "80",
+        "capacityLabel": "Large",
+        "baseCurrency": "THB"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n4",
+      "position": {
+        "x": 560.0983098590116,
+        "y": 565.0745132243667
+      },
+      "caption": "Rate ",
+      "labels": [
+        "Rate "
+      ],
+      "properties": {
+        "rateId": "1",
+        "costPerUnit": "300"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n5",
+      "position": {
+        "x": 364.07256921666067,
+        "y": -1.3289676692169223
+      },
+      "caption": "Promotion ",
+      "labels": [
+        "Promotion "
+      ],
+      "properties": {
+        "promoId": "1",
+        "code": "WELCOME10",
+        "discountPercent": "10",
+        "validFrom": "date('2025-01-01')",
+        "validTo": "date('2025-12-31')"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n6",
+      "position": {
+        "x": 136.35694374166744,
+        "y": 494.422152093273
+      },
+      "caption": "Booking ",
+      "labels": [
+        "Booking "
+      ],
+      "properties": {
+        "bookingId": "1",
+        "startTime": "datetime('2025-11-03T10:00:00')",
+        "rentalUnit": "2",
+        "status": "CONFIRMED",
+        "discountApplied": "false",
+        "totalCost": "150*2"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    },
+    {
+      "id": "n8",
+      "position": {
+        "x": -74.03281063999724,
+        "y": 284.03239771160827
+      },
+      "caption": "Refund",
+      "labels": [
+        "Refund"
+      ],
+      "properties": {
+        "affectedLocation": "Pathumthani",
+        "amount": "1200",
+        "decidedAt": "datetime('2025-11-03T10:00:00')",
+        "eligable": "True",
+        "method": "CASH",
+        "name": "refund",
+        "reason": "due to maintenance",
+        "refundId": "1",
+        "state": "COMPLETED"
+      },
+      "style": {
+        "label-display": "pill"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "n0",
+      "fromId": "n2",
+      "toId": "n3",
+      "type": "OWNS",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n1",
+      "fromId": "n3",
+      "toId": "n1",
+      "type": "HAS_FACILITY",
+      "properties": {
+        "count": "50"
+      },
+      "style": {}
+    },
+    {
+      "id": "n2",
+      "fromId": "n4",
+      "toId": "n0",
+      "type": "FOR_TIME",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n3",
+      "fromId": "n3",
+      "toId": "n4",
+      "type": "HAS_RATE",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n4",
+      "fromId": "n5",
+      "toId": "n3",
+      "type": "APPLIES_TO",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n5",
+      "fromId": "n2",
+      "toId": "n6",
+      "type": "BOOKED",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n6",
+      "fromId": "n6",
+      "toId": "n3",
+      "type": "BOOKS",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n7",
+      "fromId": "n6",
+      "toId": "n1",
+      "type": "INCLUDES_FACILITY ",
+      "properties": {
+        "amount": "1"
+      },
+      "style": {}
+    },
+    {
+      "id": "n10",
+      "fromId": "n2",
+      "toId": "n5",
+      "type": "ELIGABLE_FOR",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n11",
+      "fromId": "n2",
+      "toId": "n8",
+      "type": "REFUND_PROCESS",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n12",
+      "fromId": "n8",
+      "toId": "n6",
+      "type": "FOR_BOOKING",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n13",
+      "fromId": "n6",
+      "toId": "n4",
+      "type": "WITH_RATE",
+      "properties": {},
+      "style": {}
+    },
+    {
+      "id": "n14",
+      "fromId": "n2",
+      "toId": "n6",
+      "type": "GIVE_FEEDBACK",
+      "properties": {
+        "createdAt": "datetime('2025-10-16T12:00:00')",
+        "rating": "5",
+        "comment": "Great space!"
+      },
+      "style": {
+        "margin-peer": 44
+      }
+    }
+  ],
+  "style": {
+    "font-family": "sans-serif",
+    "background-color": "#FAFCFF",
+    "background-image": "",
+    "background-size": "100%",
+    "node-color": "#4C8EDA",
+    "border-width": 2,
+    "border-color": "#2870c2",
+    "radius": 25,
+    "node-padding": 5,
+    "node-margin": 2,
+    "outside-position": "auto",
+    "node-icon-image": "",
+    "node-background-image": "",
+    "icon-position": "inside",
+    "icon-size": 64,
+    "caption-position": "inside",
+    "caption-max-width": 200,
+    "caption-color": "#ffffff",
+    "caption-font-size": 10,
+    "caption-font-weight": "normal",
+    "label-position": "outside",
+    "label-display": "bare",
+    "label-color": "#ffffff",
+    "label-background-color": "#4C8EDA",
+    "label-border-color": "#4C8EDA",
+    "label-border-width": 0,
+    "label-font-size": 10,
+    "label-padding": 2,
+    "label-margin": 2,
+    "directionality": "directed",
+    "detail-position": "inline",
+    "detail-orientation": "parallel",
+    "arrow-width": 1,
+    "arrow-color": "#A5ABB6",
+    "margin-start": 0,
+    "margin-end": 0,
+    "margin-peer": 20,
+    "attachment-start": "normal",
+    "attachment-end": "normal",
+    "relationship-icon-image": "",
+    "type-color": "#000000",
+    "type-background-color": "#ffffff",
+    "type-border-color": "#000000",
+    "type-border-width": 0,
+    "type-font-size": 10,
+    "type-padding": 2,
+    "property-position": "outside",
+    "property-alignment": "colon",
+    "property-color": "#000000",
+    "property-font-size": 10,
+    "property-font-weight": "normal"
+  }
+}
