@@ -290,3 +290,55 @@ CREATE (fb:Feedback {
 })
 CREATE (c)-[:GAVE_FEEDBACK]->(fb)
 CREATE (fb)-[:FOR]->(sp);
+
+// ---------- PROMOTIONS (two codes, user-targeted) ----------
+UNWIND [
+  {
+    code:'WELCOME-10',
+    discountPercent:10, discountAmount:null,
+    minSpend:0, maxDiscount:300,
+    validFrom:date('2025-01-01'), validTo:date('2025-12-31'),
+    appliesTo:['CoWork Central','Meeting Room A'],
+    recipients:[
+      'customer1@ourspace.test','customer5@ourspace.test','customer20@ourspace.test',
+      'customer31@ourspace.test','customer42@ourspace.test','customer54@ourspace.test',
+      'customer68@ourspace.test','customer77@ourspace.test','customer85@ourspace.test',
+      'customer89@ourspace.test'
+    ]
+  },
+  {
+    code:'BKK-15',
+    discountPercent:15, discountAmount:null,
+    minSpend:300, maxDiscount:400,
+    validFrom:date('2025-09-01'), validTo:date('2026-03-31'),
+    appliesTo:['Meeting Room A'],
+    recipients:[
+      'customer9@ourspace.test','customer13@ourspace.test','customer23@ourspace.test',
+      'customer33@ourspace.test','customer43@ourspace.test','customer53@ourspace.test',
+      'customer63@ourspace.test','customer73@ourspace.test','customer83@ourspace.test'
+    ]
+  }
+] AS row
+MERGE (p:Promotion {code: row.code})
+ON CREATE SET p.promoId = randomUUID()
+SET p.discountPercent = row.discountPercent,
+    p.discountAmount  = row.discountAmount,
+    p.minSpend        = row.minSpend,
+    p.maxDiscount     = row.maxDiscount,
+    p.validFrom       = row.validFrom,
+    p.validTo         = row.validTo,
+    p.stackable       = false,
+    p.usageLimit      = 100000,
+    p.perUserLimit    = 3
+
+// link to spaces
+WITH p, row
+UNWIND coalesce(row.appliesTo,[]) AS spaceName
+MATCH (s:Space {name:spaceName})
+MERGE (p)-[:APPLIES_TO]->(s)
+
+// link to specific users
+WITH p, row
+UNWIND coalesce(row.recipients,[]) AS email
+MATCH (u:User {email:email})
+MERGE (p)-[:ELIGIBLE_FOR]->(u);
