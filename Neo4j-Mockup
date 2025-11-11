@@ -335,3 +335,57 @@ WITH p, row
 UNWIND coalesce(row.recipients,[]) AS email
 MATCH (u:User {email:email})
 MERGE (p)-[:ELIGIBLE_FOR]->(u);
+
+// -------- REFUND --------
+
+UNWIND [
+  {email:'customer55@ourspace.test', reason:'due to maintenance'},                         // Pond
+  {email:'customer6@ourspace.test',  reason:'due to maintenance'},                         // Patt
+  {email:'customer22@ourspace.test', reason:'due to weather and location-based alerts'},   // Natthapong
+  {email:'customer35@ourspace.test', reason:'due to weather and location-based alerts'}    // Somporn
+] AS row
+
+// assign fixed payment method per user
+WITH row,
+     CASE row.email
+       WHEN 'customer55@ourspace.test' THEN 'CASH'       // Pond
+       WHEN 'customer6@ourspace.test'  THEN 'TRANSFER'   // Patt
+       WHEN 'customer22@ourspace.test' THEN 'CASH'       // Natthapong
+       WHEN 'customer35@ourspace.test' THEN 'TRANSFER'   // Somporn
+     END AS method
+
+MATCH (u:User {email:row.email})-[:BOOKED]->(b:Booking)-[:BOOKS]->(sp:Space)
+WITH row, method, u, sp, b
+ORDER BY b.startTime DESC
+WITH row, method, u, sp, collect(b)[0] AS b
+WHERE b IS NOT NULL AND NOT EXISTS { MATCH (:Refund)-[:FOR_BOOKING]->(b) }
+
+// cancel booking
+SET b.status = 'CANCELLED',
+    b.cancelledAt = datetime(),
+    b.cancelReason = row.reason
+
+// create refund (caption with location for Browser)
+CREATE (r:Refund {
+  refundId: randomUUID(),
+  name: sp.location,                 // caption so it won't show a number
+  reason: row.reason,
+  eligible: true,
+  amount: coalesce(b.totalCost,0),
+  decidedAt: datetime(),
+  method: method,                    // CASH or TRANSFER as fixed above
+  state: 'COMPLETED',
+  affectedLocation: sp.location
+})
+
+MERGE (u)-[:RECEIVED_REFUND]->(r)
+MERGE (r)-[:FOR_BOOKING]->(b)
+
+RETURN row.email AS email,
+       row.reason AS reason,
+       b.bookingId AS bookingId,
+       r.method AS paymentMethod,
+       r.amount AS amount,
+       r.affectedLocation AS location,
+       r.name AS caption;
+
