@@ -203,7 +203,7 @@ FOREACH (_ IN CASE WHEN r.day IS NULL OR tuDay IS NULL THEN [] ELSE [1] END |
   CREATE (rateDay)-[:FOR_TIME]->(tuDay)
 );
 
-// ---------- BOOKINGS (each customer 1–3 bookings; ensure ≥1 COMPLETED) ----------
+// ---------- BOOKINGS (1–3 per customer; ensure ≥1 COMPLETED; use any Rate node) ----------
 MATCH (c:User {accountType:'customer'})
 WITH collect(c) AS custs
 UNWIND custs AS cust
@@ -211,28 +211,55 @@ WITH cust, 1 + toInteger(rand()*3) AS num
 UNWIND range(1, num) AS k
 MATCH (sp:Space)
 WITH cust, k, collect(sp) AS spaces
-WITH cust, k,
-     spaces[toInteger(rand()*size(spaces))] AS space,
-     datetime('2025-10-01T09:00:00') + duration({days: toInteger(rand()*60), hours:(k % 4)*2}) AS startAt,
-     1 + toInteger(rand()*4) AS units
-MATCH (space)-[:HAS_RATE]->(rate)-[:FOR_TIME]->(:TimeUnit {name:'hour'})
-WITH cust, space, startAt, units, rate, k,
+WITH
+  cust, k,
+  spaces[toInteger(rand()*size(spaces))] AS space,
+  datetime('2025-10-01T09:00:00') + duration({days: toInteger(rand()*60), hours:(k % 4)*2}) AS startAt
+
+// pick a random available rate for that space (hour | half_day | full_day)
+MATCH (space)-[:HAS_RATE]->(rate)-[:FOR_TIME]->(tu:TimeUnit)
+WITH cust, k, space, startAt, collect({rate:rate, tu:tu}) AS opts
+WITH cust, k, space, startAt, opts, size(opts) AS n
+WITH cust, k, space, startAt, opts[toInteger(rand()*n)] AS pick
+WITH cust, k, space, startAt,
+     pick.rate  AS rate,
+     pick.tu    AS tu,
+     pick.tu.name AS timeUnitName,
+     pick.tu.minutesPerUnit AS mpu
+
+// decide units based on chosen time unit
+WITH cust, k, space, startAt, rate, tu, timeUnitName, mpu,
+     CASE timeUnitName
+       WHEN 'hour'      THEN 1 + toInteger(rand()*4)   // 1..5 hours
+       WHEN 'half_day'  THEN 1                         // 1 half-day
+       WHEN 'full_day'  THEN 1                         // 1 day
+       ELSE 1
+     END AS units
+
+WITH cust, space, startAt, units, rate, tu, timeUnitName, mpu,
      CASE
        WHEN k = 1 THEN 'COMPLETED'
        WHEN rand() < 0.20 THEN 'CANCELLED'
        WHEN rand() < 0.50 THEN 'CONFIRMED'
        ELSE 'COMPLETED'
-     END AS status
+     END AS status,
+     startAt + duration({minutes: mpu * units}) AS endAt
+
 CREATE (b:Booking {
   bookingId: randomUUID(),
   startTime: startAt,
+  endTime:   endAt,             // optional, remove if you don’t store it
   rentalUnit: units,
+  timeUnit:  timeUnitName,      // 'hour' | 'half_day' | 'full_day'
   status: status,
   discountApplied: false,
   totalCost: rate.costPerUnit * units
 })
 CREATE (cust)-[:BOOKED]->(b)
 CREATE (b)-[:BOOKS]->(space)
+CREATE (b)-[:USED_RATE]->(rate)   // keep an audit trail of which Rate was used
+
+// optional facility reservation as before
 WITH b, space
 OPTIONAL MATCH (space)-[:HAS_FACILITY]->(f)
 WITH b, f ORDER BY rand()
