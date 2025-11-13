@@ -203,7 +203,7 @@ FOREACH (_ IN CASE WHEN r.day IS NULL OR tuDay IS NULL THEN [] ELSE [1] END |
   CREATE (rateDay)-[:FOR_TIME]->(tuDay)
 );
 
-// ---------- BOOKINGS (1–3 per customer; ensure ≥1 COMPLETED; use any Rate node) ----------
+       // ---------- BOOKINGS (1–3 per customer; ensure ≥1 COMPLETED; use any Rate node) ----------
 MATCH (c:User {accountType:'customer'})
 WITH collect(c) AS custs
 UNWIND custs AS cust
@@ -245,19 +245,41 @@ WITH cust, space, startAt, units, rate, tu, timeUnitName, mpu,
      END AS status,
      startAt + duration({minutes: mpu * units}) AS endAt
 
+// create booking
 CREATE (b:Booking {
   bookingId: randomUUID(),
   startTime: startAt,
-  endTime:   endAt,             // optional, remove if you don’t store it
+  endTime:   endAt,
   rentalUnit: units,
   timeUnit:  timeUnitName,      // 'hour' | 'half_day' | 'full_day'
   status: status,
   discountApplied: false,
   totalCost: rate.costPerUnit * units
 })
+
+// main relations
+WITH cust, space, rate, b, status
 CREATE (cust)-[:BOOKED]->(b)
 CREATE (b)-[:BOOKS]->(space)
-CREATE (b)-[:USED_RATE]->(rate)   // keep an audit trail of which Rate was used
+CREATE (b)-[:USED_RATE]->(rate)
+
+// random feedback RELATIONSHIP (only for COMPLETED bookings)
+WITH cust, b, space, status,
+     ['Nice location',
+      'Very clean space',
+      'Good facilities',
+      'Cozy but a bit small',
+      'Too noisy during the day',
+      'Comfortable and quiet',
+      'Great for meetings',
+      'Lighting could be better'] AS comments
+FOREACH (_ IN CASE WHEN status = 'COMPLETED' THEN [1] ELSE [] END |
+  CREATE (cust)-[:GIVE_FEEDBACK {
+    rating: 3 + toInteger(rand()*3),                     // 3–5
+    comment: comments[toInteger(rand()*size(comments))], // random text
+    createdAt: b.endTime + duration({hours: 1 + toInteger(rand()*12)})
+  }]->(b)
+)
 
 // optional facility reservation as before
 WITH b, space
@@ -267,49 +289,6 @@ WITH b, collect(f)[0] AS f
 FOREACH (_ IN CASE WHEN f IS NULL THEN [] ELSE [1] END |
   CREATE (b)-[:RESERVES {amount:1}]->(f)
 );
-
-// ---------- FEEDBACK (one per customer; 70% good; varied text) ----------
-MATCH (c:User {accountType:'customer'})-[:BOOKED]->(b:Booking {status:'COMPLETED'})
-WITH c, b
-ORDER BY b.startTime DESC
-WITH c, collect(b)[0] AS b    // latest completed booking per customer
-MATCH (b)-[:BOOKS]->(sp:Space)
-WITH c, b, sp,
-     CASE WHEN rand() < 0.70
-          THEN 4 + toInteger(rand()*2)    // 4 or 5
-          ELSE 1 + toInteger(rand()*3)    // 1..3
-     END AS stars
-
-WITH c, b, sp, stars,
-     // base sentiment pools
-     ['Absolutely loved it','Fantastic space','Perfect for our meeting','Top-notch experience','Will book again'] AS pool5,
-     ['Good value','Nice room','Worked well overall','Solid choice','Pleasant experience'] AS pool4,
-     ['It was okay','Average experience','Could be better','Met basic needs','Not great'] AS pool3,
-     ['Disappointed','Several issues','Would not recommend','Below expectations','Had problems'] AS pool1_2,
-     // aspects
-     ['WiFi was fast','Projector was bright','Audio was clear','Room was very clean','Staff were helpful','Location was convenient','Check-in was smooth'] AS goodAspects,
-     ['AC was too cold','Noise from hallway','Chairs uncomfortable','WiFi inconsistent','Projector a bit dim','Room not very clean','Hard to find'] AS badAspects
-
-WITH c, b, sp, stars,
-     CASE
-       WHEN stars = 5 THEN pool5[toInteger(rand()*size(pool5))]
-       WHEN stars = 4 THEN pool4[toInteger(rand()*size(pool4))]
-       WHEN stars = 3 THEN pool3[toInteger(rand()*size(pool3))]
-       ELSE pool1_2[toInteger(rand()*size(pool1_2))]
-     END AS base,
-     CASE WHEN stars >= 4
-          THEN goodAspects[toInteger(rand()*size(goodAspects))]
-          ELSE badAspects[toInteger(rand()*size(badAspects))]
-     END AS aspect
-
-CREATE (fb:Feedback {
-  feedbackId: randomUUID(),
-  createdAt: b.startTime + duration({days:1}),
-  rating: stars,
-  comment: base + '. ' + aspect + '. Booked ' + toString(b.rentalUnit) + ' hour(s) at ' + sp.name + '.'
-})
-CREATE (c)-[:GAVE_FEEDBACK]->(fb)
-CREATE (fb)-[:FOR]->(sp);
 
 // ---------- PROMOTIONS (two codes, user-targeted) ----------
 UNWIND [
@@ -411,3 +390,4 @@ RETURN row.email AS email,
        r.amount AS amount,
        r.affectedLocation AS location,
        r.name AS caption;
+
